@@ -7,15 +7,15 @@
 using Number = std::uint64_t;
 
 template<int digitCount = 12>
-Number MaxJoltage( std::string_view battery)
+Number MaxJoltage( std::string_view bank)
 {
-    assert (battery.size() >= digitCount);
+    assert (bank.size() >= digitCount);
 
-    auto lastposition = battery.begin();
+    auto lastposition = bank.begin();
     Number result = 0;
     for (auto n = 0; n < digitCount; ++n)
     {
-        lastposition = std::max_element( lastposition, battery.end() - digitCount + n + 1);
+        lastposition = std::max_element( lastposition, bank.end() - digitCount + n + 1);
         result = 10 * result + (*lastposition - '0');
         ++lastposition;
     }

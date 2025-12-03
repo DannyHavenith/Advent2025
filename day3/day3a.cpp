@@ -4,12 +4,12 @@
 #include <iostream>
 #include <string>
 
-int MaxJoltage( std::string_view battery)
+int MaxJoltage( std::string_view bank)
 {
-    assert( battery.size() >= 2);
+    assert( bank.size() >= 2);
 
-    const auto firstDigit = std::max_element( battery.begin(), battery.end() - 1);
-    const auto secondDigit = std::max_element( firstDigit + 1, battery.end());
+    const auto firstDigit = std::max_element( bank.begin(), bank.end() - 1);
+    const auto secondDigit = std::max_element( firstDigit + 1, bank.end());
 
     return 10 * (*firstDigit - '0') + (*secondDigit - '0');
 }
