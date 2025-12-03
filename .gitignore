@@ -1,0 +1,2 @@
+# Ignore executables (files without extension) in day*/ directories
+day*/day[0-9]*[ab]
