@@ -93,6 +93,18 @@ int main()
         auto currentLRC = Row();
         Row *currentRow = nullptr;
 
+        // "C" stands for "Cell" which is 1 if a cell is occupied and 0 if not "LR"
+        // stands for "Left Right count" which is the sum of the left cell and the
+        // righ cell (0-2) "LRC" is the sum of "LR" and "C"
+        //
+        // This algorithm performs a line scan of the grid from top to bottom. The
+        // line that is visited is the 'next line' and what's called the 'current row'
+        // has been determined in the previous iteration, if any. At the start of
+        // each iteration:
+        //    * currentCount holds for each cell the sum of all neighbours in the
+        //      current and previous rows, but not yet of the next row
+        //    * currentLRC holds the LRC count of the cells of the current row.
+        //    * currentRow holds the occupation count of the current row.
         removedThisIteration = 0;
         for (auto &nextRow : grid)
         {
@@ -107,12 +119,12 @@ int main()
                     if ((*currentRow)[i] and currentCount[i] < 4)
                     {
                         ++removedThisIteration;
-                        (*currentRow)[i] = 0; // remove already. Safe because we have currentCount
+                        (*currentRow)[i] = 0; // remove
                     }
                 }
             }
 
-            // move to the next line current <- next
+            // Move to the next line, current <- next
             currentCount = currentLRC + nextLR;
             currentLRC = nextLRC;
             currentRow = &nextRow;

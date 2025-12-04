@@ -13,6 +13,12 @@ Number TenToThePowerOf( unsigned int exponent)
     return std::pow( 10, exponent);
 }
 
+/**
+ * Create a number that can be written as twice the sequence if digits of the input number
+ * halfSize is the number of digits of the input number.
+ *
+ * E.g. Twice( 12, 2) = 1212, Twice( 12, 3) = 12012, Twice( 123, 3) = 123123, etc.
+ */
 Number Twice( Number number, int halfSize)
 {
     return number + number * TenToThePowerOf( halfSize);
@@ -34,8 +40,19 @@ Number CalculateUpper( Number upperBound, int halfSize)
     return candidate;
 }
 
-/// determine the sum of all repeating numbers of 'size' digits between first and last.
-Number CountMatches(
+/**
+ * Calculate the sum of matches with 'size' digits that are in the range
+ * [first, last]
+ *
+ * This function does not iterate over candidates. It uses the fact that the sum
+ * of a range a + (a+1) + (a+2) + ... + b (e.g. 1 + 2 + 3 + .. + 9) can be written as:
+ *     ((b-a+1)*(b+a))/2
+ * If we call that SUM(a,b)
+ * Then the sum of:
+ *  (a + pow * a) + (a+1 + pow * (a+1)) + ... + (b + pow * b) (e.g. 11 + 22 + 33 + ... + 99, where pow = 10)
+ * ...can be written as SUM(a,b) + pow * SUM(a,b)
+ */
+Number SumOfMatches(
     int size,
     Number first,
     Number last)
@@ -60,7 +77,6 @@ Number CountMatches(
 
     auto rangeSum = ((highestCounter - lowestCounter + 1) * ( highestCounter + lowestCounter)) / 2;
     return Twice(rangeSum, halfSize);
-
 }
 
 int main()
@@ -83,7 +99,7 @@ int main()
 
         for ( auto size = firstSize; size <= secondSize; ++size)
         {
-            sum += CountMatches( size, stol( firstString), stol( secondString));
+            sum += SumOfMatches( size, stol( firstString), stol( secondString));
         }
     }
 

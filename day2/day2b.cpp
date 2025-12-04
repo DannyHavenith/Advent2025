@@ -41,8 +41,12 @@ Number CalculateUpper( Number upperBound, int segmentSize, int segments)
     return candidate;
 }
 
-/// count all repeating numbers of size 'size' between first and last.
-Number CountMatches(
+/**
+ * Calculate the number of matches with 'size' digits that are in the range [first, last]
+ *
+ * This function does not iterate over candidates, but rather
+ */
+Number SumOfMatches(
     int size,
     Number first,
     Number last)
@@ -69,7 +73,18 @@ Number CountMatches(
             highestCounter = CalculateUpper( last, segmentSize, segments);
         }
 
-        // there's a faster way, but let's do this one for now.
+        // some numbers appear more than once, i.e. '111111' can be constructed
+        // as '11 11 11' or '111 111'. To remove duplicates, we add them to a
+        // set first. A more efficient way would be to remove the duplicates
+        // from the sum. For instance:
+        //  Sum( all matches of 6 digits) =
+        //       Sum( all matches of 2 segments) +
+        //       Sum( all matches of 3 segments) -
+        //       Sum( all matches of 6 segments)
+        //
+        // That is because all matches of 6 segments
+        // (like '1 1 1 1 1 1') already appear both in matches of 2 segments ('111
+        // 111') and matches of three segments ('11 11 11').
         for ( auto n = lowestCounter; n <= highestCounter; ++n)
         {
             matches.insert(Repeated( n, segmentSize, segments));
@@ -98,7 +113,7 @@ int main()
 
         for ( auto size = firstSize; size <= secondSize; ++size)
         {
-            sum += CountMatches( size, stol( firstString), stol( secondString));
+            sum += SumOfMatches( size, stol( firstString), stol( secondString));
         }
     }
 
