@@ -1,0 +1,12 @@
+#! /bin/bash
+
+for dir in day?
+do 
+    pushd $dir
+    for exe in day?{a,b}
+    do 
+        echo -e "\n====$exe====" >&2
+        time ./$exe
+    done
+    popd
+done > /dev/null
