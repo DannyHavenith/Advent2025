@@ -4,19 +4,18 @@
 #include <fstream>
 #include <numeric>
 #include <regex>
-#include <set>
+#include <vector>
 #include <utility>
 
 using Number = std::uint64_t;
 using Range = std::pair<Number, Number>;
-using Ranges = std::set<Range>;
+using Ranges = std::vector<Range>;
 
 Ranges UnOverlap( Ranges ranges)
 {
-    Ranges result;
     for (auto currentIt = ranges.begin(); currentIt != ranges.end();++currentIt)
     {
-        auto current = *currentIt;
+        auto &current = *currentIt;
         auto mergeCandidate = std::next( currentIt);
 
         // ranges are already sorted on .first, so we know that
@@ -29,9 +28,8 @@ Ranges UnOverlap( Ranges ranges)
             }
             mergeCandidate = ranges.erase( mergeCandidate);
         }
-        result.insert( current);
     }
-    return result;
+    return ranges;
 }
 
 Number SumRanges( const Ranges &ranges)
@@ -55,8 +53,10 @@ int main()
     std::smatch m;
     while (getline(input, line) and regex_match( line, m, rangeRegex))
     {
-        ranges.emplace( std::stoul( m[1]), std::stoul(m[2]));
+        ranges.emplace_back( std::stoul( m[1]), std::stoul(m[2]));
     }
+
+    std::sort( ranges.begin(), ranges.end());
 
     ranges = UnOverlap( std::move( ranges));
 
