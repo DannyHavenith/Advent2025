@@ -15,17 +15,23 @@ Number TenToThePowerOf( unsigned int exponent)
 }
 
 /**
- * Expand a number into a repeated sequence, e.g. expand the number 12 into
- * 121212 (if segments is 3 and segmentsize = 2)
+ * Generate a number that can be used to create a repeated sequence.
+ *
+ * An example of an expander with segmentSize 2 and segmentCount 3 would be:
+ *    10101
+ *
+ * This can be used to turn a number like e.g. 13 into a number with repeated
+ * digits like 131313.
  */
-Number Expand( Number number, int segmentSize, int segments)
+Number Expander( int segmentSize, int segmentCount)
 {
-    Number sum = 0;
-    for ( auto count = 0; count < segments; ++count)
+    Number expander = 0;
+    const Number power = TenToThePowerOf( segmentSize);
+    for ( auto count = 0; count < segmentCount; ++count)
     {
-        sum += TenToThePowerOf( count * segmentSize) * number;
+        expander = expander * power + 1;
     }
-    return sum;
+    return expander;
 }
 
 /**
@@ -35,11 +41,11 @@ Number Expand( Number number, int segmentSize, int segments)
 Number CalculateLower( Number lowerBound, int segmentSize, int segments)
 {
     auto candidate = TenToThePowerOf( segmentSize - 1);
-    if (Expand( candidate, segmentSize, segments) >= lowerBound) return candidate;
+    if ( candidate * Expander( segmentSize, segments) >= lowerBound) return candidate;
 
     const auto power = TenToThePowerOf( segmentSize * (segments-1));
-    candidate = lowerBound / power;
-    if (Expand(candidate, segmentSize, segments) >= lowerBound) return candidate;
+    candidate = lowerBound / power; // take the leftmost 'segmentSize' digits of lowerBound
+    if (candidate * Expander( segmentSize, segments) >= lowerBound) return candidate;
 
     return candidate + 1;
 }
@@ -51,11 +57,11 @@ Number CalculateLower( Number lowerBound, int segmentSize, int segments)
 Number CalculateUpper( Number upperBound, int segmentSize, int segments)
 {
     auto candidate = TenToThePowerOf( segmentSize) -1;
-    if (Expand( candidate, segmentSize, segments) <= upperBound) return candidate;
+    if ( candidate * Expander( segmentSize, segments) <= upperBound) return candidate;
 
     const auto power = TenToThePowerOf( segmentSize * (segments-1));
     candidate = upperBound / power;
-    if (Expand( candidate, segmentSize, segments) <= upperBound) return candidate;
+    if ( candidate * Expander( segmentSize, segments) <= upperBound) return candidate;
 
     return candidate - 1;
 }
@@ -74,16 +80,38 @@ int CountFactorsOf( int segment, const std::set<int> &previousSegments)
 }
 
 /**
+ * Calculate the sum of of numbers that
+ *   * have 'size' digits
+ *   * have segmentCount repeats of the same sequence of digits
+ *   * are between first and last (inclusive)
+ *
+ * ...and do that calculation in O(1) time. In other words, the complexity does
+ * not depend on the size of the input range.
+ *
+ * It makes use of this formula:
+ *   a + (a+1) + (a+2) + ... + b  (e.g. 19 + 20 + 21 + 22 + ...)
+ *    = ((b - a + 1) * (a + b)) / 2
+ *
+ * Repeated sequences like for example 1919 + 2020 + 2121 + 2222 + ...
+ * can be written as x * 19 + x * 20 + x * 21 + x * 22 + ...,
+ * which is x * ( 19 + 20 + 21 + 22 + ...),
+ * where in this example x = 101,
+ *
+ */
+Number SumOfMatchesSegmented( int size, int segmentCount, Number first, Number last)
+{
+        const auto segmentSize = size / segmentCount;
+
+        const auto lowestCounter = CalculateLower( first, segmentSize, segmentCount);
+        const auto highestCounter = CalculateUpper( last, segmentSize, segmentCount);
+        const auto rangeSum = ((highestCounter - lowestCounter + 1) * ( highestCounter + lowestCounter)) / 2;
+        return  rangeSum * Expander( segmentSize, segmentCount);
+}
+
+/**
  * Calculate the sum of matches with 'size' digits that are in the range [first, last]
  *
- * This function does not iterate over candidates. It uses the fact that the sum
- * of a range a + (a+1) + (a+2) + ... + b (e.g. 1 + 2 + 3 + .. + 9) can be written as:
- *     ((b-a+1)*(b+a))/2
- * If we call that SUM(a,b)
- * Then the sum of:
- *  (a + pow * a) + (a+1 + pow * (a+1)) + ... + (b + pow * b) (e.g. 11 + 22 + 33 + ... + 99, where pow = 10)
- * ...can be written as SUM(a,b) + pow * SUM(a,b)
-*/
+ */
 Number SumOfMatches(
     int size,
     Number first,
@@ -116,17 +144,9 @@ Number SumOfMatches(
 
         previousSegmentCounts.insert( segmentCount);
 
-        const auto segmentSize = size / segmentCount;
-
-
-        const auto lowestCounter = CalculateLower( first, segmentSize, segmentCount);
-        const auto highestCounter = CalculateUpper( last, segmentSize, segmentCount);
-        // Note that we're not iterating over candidate numbers here. If for example segmentCount is 3 and
-        // lowestcounter = 21 and highestcounter = 32 then this formula will calculate the sum of all numbers
-        //     212121 + 222222 + 232323 + ... + 313131 + 323232
-        const auto rangeSum = ((highestCounter - lowestCounter + 1) * ( highestCounter + lowestCounter)) / 2;
-        sum += thisSegmentWeight * Expand(rangeSum, segmentSize, segmentCount);
+        sum += thisSegmentWeight * SumOfMatchesSegmented( size, segmentCount, first, last);
     }
+
     return sum;
 }
 
