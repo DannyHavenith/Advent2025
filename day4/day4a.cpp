@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <csignal>
 #include <fstream>
 #include <iostream>
