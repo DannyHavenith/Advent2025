@@ -4,6 +4,7 @@
 #include <iostream>
 #include <map>
 #include <numeric>
+#include <ranges>
 #include <set>
 #include <string>
 #include <utility>
@@ -22,29 +23,17 @@ Positions FindAll( char needle, std::string_view haystack)
     return result;
 }
 
-Positions MapKeys( const Beams &beams)
-{
-    Positions result;
-    std::transform(
-        beams.begin(), beams.end(),
-        std::inserter( result, result.end()),
-        [](const auto &pair){ return pair.first;}
-    );
-    return result;
-}
-
 int main()
 {
     std::ifstream input{"input7.txt"};
     std::string line;
+    namespace ranges = std::ranges;
 
     getline( input, line);
 
-    auto positions = FindAll( 'S', line);
     Beams beams;
-
-    std::transform(
-        positions.begin(), positions.end(),
+    ranges::transform(
+        FindAll( 'S', line),
         std::inserter( beams, beams.end()),
         []( auto pos){ return std::pair{pos, 1};}
     );
@@ -52,16 +41,12 @@ int main()
 
     while (getline(input, line))
     {
-        const auto splitters = FindAll( '^', line);
 
         Positions hits;
-        const auto beamPositions = MapKeys( beams); // no C++20 ranges on this compiler?
-
-        std::set_intersection(
-            beamPositions.begin(), beamPositions.end(),
-            splitters.begin(), splitters.end(),
+        ranges::set_intersection(
+            std::views::keys( beams),
+            FindAll( '^', line),
             std::inserter( hits, hits.end()));
-
 
         for ( const auto position: hits)
         {
