@@ -1,12 +1,13 @@
 #! /bin/bash
 
-for dir in day?
+for dir in $(ls -d day* | sort -V)
 do 
     pushd $dir
-    for exe in day?{a,b}
-    do 
-        echo -e "\n====$exe====" >&2
-        time ./$exe
+    for exe in day*{a,b}
+    do
+        [ -x "$exe" ] || continue
+        echo -en "$exe " >&2
+        ./$exe
     done
     popd
 done > /dev/null
