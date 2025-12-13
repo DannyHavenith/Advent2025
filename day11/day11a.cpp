@@ -11,13 +11,12 @@
 using Tokenizer = std::sregex_token_iterator;
 using LabelGraph = std::map<std::string, std::set<std::string>>;
 using NodeIndex = int; // not that many nodes
-using Graph = std::map<NodeIndex, std::set<NodeIndex>>;
-using NodeToName = std::vector< std::string>;
+using Graph = std::vector<std::set<NodeIndex>>;
 using NameToNode = std::map< std::string, NodeIndex>;
 using Nodes = std::vector<NodeIndex>;
 using NodeFlags = std::vector<bool>;
 
-std::tuple< Graph, NodeToName, NameToNode> ReadGraph( std::istream &input)
+std::tuple< Graph, NameToNode> ReadGraph( std::istream &input)
 {
     std::string line;
 
@@ -32,22 +31,21 @@ std::tuple< Graph, NodeToName, NameToNode> ReadGraph( std::istream &input)
     }
     graphWithStrings["out"] = {};
 
-    NodeToName nodeToName;
     NameToNode nameToNode;
-    Graph graph;
+    NodeIndex nodeCounter = 0;
     for ( const auto &[key, _] : graphWithStrings)
     {
-        nodeToName.push_back( key);
-        nameToNode[key] = nodeToName.size() - 1;
+        nameToNode[key] = nodeCounter++;
     }
 
+    Graph graph(nameToNode.size());
     for ( const auto &[key, successors] : graphWithStrings)
     {
         const auto successorRange = successors | std::views::transform( [&nameToNode]( const auto &name){ return nameToNode.at( name);});
-        graph[nameToNode[key]].insert(successorRange.begin(), successorRange.end());
+        graph.at(nameToNode[key]).insert(successorRange.begin(), successorRange.end());
     }
 
-    return {graph, nodeToName, nameToNode};
+    return {graph, nameToNode};
 }
 
 /**
@@ -98,7 +96,7 @@ int main()
 
     std::ifstream input{"input11.txt"};
 
-    const auto &[graph, nodeToName, nameToNode] = ReadGraph( input);
+    const auto &[graph, nameToNode] = ReadGraph( input);
 
     const auto sorted = TopologicalSort( graph, nameToNode.at("you"));
     const auto pathCount = CountPaths( graph, sorted, nameToNode.at("you"), nameToNode.at("out"));
