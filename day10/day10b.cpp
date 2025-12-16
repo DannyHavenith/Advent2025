@@ -11,6 +11,13 @@
 
 #include "../timer.h"
 
+/**
+ * The solution here is not optimal. Probably, the fastest solution would be to
+ * implement a linear equation system solver, but that seems a bit much for a
+ * single puzzle. Alternatively we could use a solver library like Z3, but that
+ * also feels like cheating until I know how Z3 implements its solving.
+ */
+
 using Positions = std::set<int>;
 using Bitset = std::uint16_t; // max number of lights appears to be 10
 using Button = Bitset;

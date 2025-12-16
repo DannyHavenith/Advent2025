@@ -11,8 +11,10 @@
 using Tokenizer = std::sregex_token_iterator;
 using LabelGraph = std::map<std::string, std::set<std::string>>;
 using NodeIndex = int; // not that many nodes
+
+// Graph is an adjacency list, or in other words: for each node
+// it contains the set of successor nodes.
 using Graph = std::vector<std::set<NodeIndex>>;
-using NodeToName = std::vector< std::string>;
 using NameToNode = std::map< std::string, NodeIndex>;
 using Nodes = std::vector<NodeIndex>;
 using NodeFlags = std::vector<bool>;
@@ -50,7 +52,8 @@ std::tuple< Graph, NameToNode> ReadGraph( std::istream &input)
 }
 
 /**
- * Sort the nodes of the graph topologically.
+ * Sort the nodes of the graph that are reachable through 'start' topologically.
+ * After sorting, all successor nodes of a node appear BEFORE that node in sortedNodes.
  *
  * We could let boost.graph do all of this, but what's the fun in that?
  */
@@ -66,6 +69,12 @@ void TopologicalSort( const Graph &graph, NodeIndex start, Nodes &sortedNodes, N
     sortedNodes.push_back( start);
 }
 
+/**
+ * Sort the nodes topologically.
+ *
+ * This returns all nodes reachable from 'start', ordered such that all
+ * successors of a node appear AFTER that node in the result.
+ */
 Nodes TopologicalSort( const Graph &graph, NodeIndex start)
 {
     NodeFlags visited(graph.size(), false);
