@@ -6,7 +6,9 @@
 #include <string>
 #include <vector>
 
+#include "../timer.h"
 
+// All (horizontal) positions where a beam is traveling.
 using Positions = std::set<int>;
 
 Positions FindAll( char needle, std::string_view haystack)
@@ -21,6 +23,8 @@ Positions FindAll( char needle, std::string_view haystack)
 
 int main()
 {
+    Timer t;
+
     std::ifstream input{"input7.txt"};
     std::string line;
     size_t splits = 0;
@@ -33,9 +37,9 @@ int main()
         const auto splitters = FindAll( '^', line);
 
         std::vector<int> hits;
-        std::set_intersection(
-            beams.begin(), beams.end(),
-            splitters.begin(), splitters.end(),
+        std::ranges::set_intersection(
+            beams,
+            splitters,
             std::back_inserter( hits));
 
         splits += hits.size();

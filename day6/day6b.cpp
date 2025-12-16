@@ -6,12 +6,16 @@
 #include <regex>
 #include <string>
 
+#include "../timer.h"
+
 using Number = std::int64_t;
 using Accumulator = std::optional<Number>;
 using Accumulators = std::vector<Accumulator>;
 
 int main()
 {
+    Timer t;
+
     std::ifstream input{"input6.txt"};
     Accumulators accumulators;
 
@@ -51,25 +55,25 @@ int main()
     {
         while (not currentAccumulator->has_value()) ++currentAccumulator;
         assert( currentAccumulator != accumulators.end());
+        std::function<Number (Number, Number)> op;
 
+        Number subSum = 0;
         if (*currentOp == '+')
         {
-            Number subSum = 0;
-            while( currentAccumulator != accumulators.end() and currentAccumulator->has_value())
-            {
-                subSum += **currentAccumulator++;
-            }
-            sum += subSum;
+            op = std::plus<Number>{};
+            subSum = 0;
         }
         else
         {
-            Number subSum = 1;
-            while( currentAccumulator != accumulators.end() and currentAccumulator->has_value())
-            {
-                subSum *= **currentAccumulator++;
-            }
-            sum += subSum;
+            op = std::multiplies<Number>{};
+            subSum = 1;
         }
+
+        while( currentAccumulator != accumulators.end() and currentAccumulator->has_value())
+        {
+            subSum = op( subSum, **currentAccumulator++);
+        }
+        sum += subSum;
     }
 
     std::cout << "sum = " << sum << '\n';

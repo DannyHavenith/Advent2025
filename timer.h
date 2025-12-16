@@ -13,7 +13,7 @@ public:
 
     ~Timer()
     {
-        m_output << "duration: " << std::chrono::duration_cast< std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_start) << '\n';
+        m_output << "duration: " << std::chrono::duration_cast< std::chrono::microseconds>(std::chrono::high_resolution_clock::now() - m_start) << std::endl;
     }
 
 private:

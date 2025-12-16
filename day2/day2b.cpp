@@ -7,6 +7,8 @@
 #include <string>
 #include <regex>
 
+#include "../timer.h"
+
 using Number = std::uint64_t;
 
 // std::pow annoyingly returns doubles
@@ -153,6 +155,7 @@ Number SumOfMatches(
 
 int main()
 {
+    Timer t;
     std::ifstream input{"input2.txt"};
     std::string line;
 

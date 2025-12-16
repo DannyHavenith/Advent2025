@@ -3,6 +3,8 @@
 #include <iostream>
 #include <string>
 
+#include "../timer.h"
+
 int absmod( int n, int m)
 {
     // yes, I'm deliberately obfuscating this...
@@ -11,6 +13,8 @@ int absmod( int n, int m)
 
 int main()
 {
+    Timer t;
+
     std::ifstream input{"input1.txt"};
     std::string line;
 

@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "../timer.h"
+
 using Cell = uint8_t;
 using Row = std::vector<Cell>;
 
@@ -63,6 +65,7 @@ Row CalculateLR( const Row &row)
 
 int main()
 {
+    Timer t;
 
     std::ifstream input{"input4.txt"};
     std::string nextLine;

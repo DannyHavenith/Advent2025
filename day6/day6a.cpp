@@ -5,6 +5,8 @@
 #include <regex>
 #include <string>
 
+#include "../timer.h"
+
 using Number = std::int64_t;
 
 struct Accumulator {
@@ -21,6 +23,8 @@ using Tokenizer = std::sregex_token_iterator;
 
 int main()
 {
+    Timer t;
+
     std::ifstream input{"input6.txt"};
     std::string line;
     Accumulators accumulators;

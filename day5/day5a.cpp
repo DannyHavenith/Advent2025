@@ -6,6 +6,8 @@
 #include <vector>
 #include <utility>
 
+#include "../timer.h"
+
 using Number = std::uint64_t;
 using Range = std::pair<Number, Number>;
 using Ranges = std::vector<Range>;
@@ -33,6 +35,8 @@ Ranges UnOverlap( Ranges ranges)
 
 int main()
 {
+    Timer t;
+
     std::ifstream input{"input5.txt"};
     std::string line;
     Ranges ranges;

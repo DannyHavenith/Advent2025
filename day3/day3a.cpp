@@ -4,6 +4,8 @@
 #include <iostream>
 #include <string>
 
+#include "../timer.h"
+
 int MaxJoltage( std::string_view bank)
 {
     assert( bank.size() >= 2);
@@ -17,6 +19,8 @@ int MaxJoltage( std::string_view bank)
 
 int main()
 {
+    Timer t;
+
     std::ifstream input{"input3.txt"};
     std::string line;
 

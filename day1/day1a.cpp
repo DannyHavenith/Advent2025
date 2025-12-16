@@ -3,8 +3,12 @@
 #include <iostream>
 #include <string>
 
+#include "../timer.h"
+
 int main()
 {
+    Timer t;
+
     std::ifstream input{"input1.txt"};
     std::string line;
 

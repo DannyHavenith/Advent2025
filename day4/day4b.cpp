@@ -7,6 +7,8 @@
 #include <string>
 #include <vector>
 
+#include "../timer.h"
+
 using Cell = uint8_t;
 using Row = std::vector<Cell>;
 using Grid = std::vector<Row>;
@@ -76,6 +78,7 @@ Row CalculateLR( const Row &row)
 
 int main()
 {
+    Timer t;
     // "C" stands for "Cell" which is 1 if a cell is occupied and 0 if not
     // "LR" stands for "Left Right count" which is the sum of the left cell and the righ cell (0-2)
     // "LRC" is the sum of "LR" and "C"

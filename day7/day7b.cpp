@@ -9,8 +9,13 @@
 #include <string>
 #include <utility>
 
+#include "../timer.h"
+
 using BeamCount = std::size_t;
 using Positions = std::set<int>;
+
+// This maps from (horizontal) beam position
+// to the number of beams traveling in that position.
 using Beams = std::map<int, BeamCount>;
 
 Positions FindAll( char needle, std::string_view haystack)
@@ -25,12 +30,14 @@ Positions FindAll( char needle, std::string_view haystack)
 
 int main()
 {
+    Timer t;
     std::ifstream input{"input7.txt"};
     std::string line;
     namespace ranges = std::ranges;
 
     getline( input, line);
 
+    // start with 1 beam in every position marked 'S'
     Beams beams;
     ranges::transform(
         FindAll( 'S', line),

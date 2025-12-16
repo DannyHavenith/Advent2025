@@ -5,6 +5,8 @@
 #include <iostream>
 #include <string>
 
+#include "../timer.h"
+
 using Number = std::uint64_t;
 
 template<int digitCount = 12>
@@ -27,6 +29,8 @@ Number MaxJoltage( std::string_view bank)
 
 int main()
 {
+    Timer t;
+
     std::ifstream input{"input3.txt"};
     std::string line;
 
