@@ -1,14 +1,16 @@
-#include <cassert>
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <ranges>
+#include <list>
 #include <regex>
-#include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
+
+#include "../timer.h"
 
 struct Position
 {
@@ -25,17 +27,17 @@ Position operator-( const Position &left, const Position &right)
 using Positions = std::vector<Position>;
 using BoxId =  Positions::difference_type;
 
-using Length = long double;
+using Length = std::int64_t;
 struct Connection
 {
-    Length distance;
+    Length distanceSquared;
     BoxId first;
     BoxId second;
 
     auto operator<=>( const Connection &) const = default;
 };
 
-using Connections = std::set<Connection>;
+using Connections = std::vector<Connection>;
 
 Positions ReadCoordinates( std::istream &coordinatesStream)
 {
@@ -58,10 +60,10 @@ Positions ReadCoordinates( std::istream &coordinatesStream)
 
 /**
  * Create the cartesian product of all possbile connections. For about 1K
- * positions this is reasonable. For 1M connections it would be a bit much...
+ * positions this is reasonable. For 1M positions it would be a bit much...
  *
- * Because Connections is a set type, the connections will be ordered by
- * increasing length.
+ * The connections are delivered as a min heap, allowing O( log n ) extraction
+ * times.
  */
 Connections AllConnections( const Positions &positions)
 {
@@ -71,19 +73,20 @@ Connections AllConnections( const Positions &positions)
         for (auto j = i + 1; j != positions.end(); ++j)
         {
             const auto diff = *i - *j;
-            const auto distancePowered = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
-            result.insert( {
-                std::sqrt( static_cast<Length>(distancePowered)),
+            const auto distanceSquared = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
+            result.push_back( {
+                static_cast<Length>(distanceSquared),
                 std::distance( positions.begin(), i),
                 std::distance( positions.begin(), j)});
         }
     }
+    std::ranges::make_heap(result, std::greater{});
     return result;
 }
 
 
-using Circuit = std::set<BoxId>;
-using Circuits = std::vector< Circuit>;
+using Circuit = std::unordered_set<BoxId>;
+using Circuits = std::list< Circuit>;
 
 Circuits::iterator FindCircuit( Circuits &circuits, BoxId box)
 {
@@ -99,6 +102,7 @@ void MergeInto( Circuit &left, const Circuit &right)
 
 int main()
 {
+    Timer t;
     std::ifstream input{"input8.txt"};
 
     auto positions = ReadCoordinates( input);
@@ -110,25 +114,48 @@ int main()
         circuits.push_back({index});
     }
 
-    constexpr auto connectionCount = 1000;
-    for ( const auto &connection : AllConnections( positions) | std::views::take( connectionCount))
+    std::vector< Circuits::iterator> boxToCircuit(positions.size());
+    for ( auto it = circuits.begin(); it != circuits.end(); ++it)
     {
-        const auto firstCircuit = FindCircuit( circuits, connection.first);
-        const auto secondCircuit = FindCircuit( circuits, connection.second);
+        boxToCircuit[*(it->begin())] = it;
+    }
+
+    constexpr auto connectionCount = 1000;
+    auto connections = AllConnections(positions);
+
+    for ( auto counter = 0; counter < connectionCount; ++ counter)
+    {
+        const auto &connection = connections.front();
+        auto firstCircuit = boxToCircuit[connection.first];
+        auto secondCircuit = boxToCircuit[connection.second];
 
         if ( firstCircuit != secondCircuit)
         {
+            if (firstCircuit->size() < secondCircuit->size()) std::swap( firstCircuit, secondCircuit);
+            for ( const auto box : *secondCircuit)
+            {
+                boxToCircuit[box] = firstCircuit;
+            }
+
             MergeInto( *firstCircuit, *secondCircuit);
             circuits.erase( secondCircuit);
         }
+
+        std::ranges::pop_heap( connections, std::greater{});
+        connections.pop_back();
     }
 
-    std::partial_sort(
-        circuits.begin(), circuits.begin() + 3, circuits.end(),
-        []( const auto &left, const auto &right){ return right.size() < left.size();}
-    );
 
-    auto result = circuits[0].size() * circuits[1].size() * circuits[2].size();
+    circuits.sort(
+        []( const auto &left, const auto &right){ return right.size() < left.size();});
+
+    auto circuitIt = circuits.begin();
+    std::size_t result = 1;
+    for (int i = 0; i < 3; ++i)
+    {
+        result = result * circuitIt->size();
+        ++circuitIt;
+    }
 
     std::cout << "product = " << result << '\n';
     return 0;

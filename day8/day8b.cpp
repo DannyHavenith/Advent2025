@@ -1,15 +1,15 @@
-#include <cassert>
+#include <algorithm>
 #include <cmath>
 #include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <iterator>
-#include <ranges>
 #include <regex>
-#include <set>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
+#include "../timer.h"
 struct Position
 {
     std::int64_t x;
@@ -25,19 +25,19 @@ Position operator-( const Position &left, const Position &right)
 using Positions = std::vector<Position>;
 using BoxId =  Positions::difference_type;
 
-using Length = long double;
+using Length = std::int64_t;
 struct Connection
 {
-    Length distance;
+    Length distanceSquared;
     BoxId first;
     BoxId second;
 
     auto operator<=>( const Connection &) const = default;
 };
 
-using Connections = std::set<Connection>;
+using Connections = std::vector<Connection>;
 
-using Circuit = std::set<BoxId>;
+using Circuit = std::unordered_set<BoxId>;
 using Circuits = std::vector< Circuit>;
 
 Positions ReadCoordinates( std::istream &coordinatesStream)
@@ -61,10 +61,10 @@ Positions ReadCoordinates( std::istream &coordinatesStream)
 
 /**
  * Create the cartesian product of all possbile connections. For about 1K
- * positions this is reasonable. For 1M connections it would be a bit much...
+ * positions this is reasonable. For 1M positions it would be a bit much...
  *
- * Because Connections is a set type, the connections will be ordered by
- * increasing length.
+ * The connections are delivered as a min heap, allowing O( log n ) extraction
+ * times.
  */
 Connections AllConnections( const Positions &positions)
 {
@@ -74,13 +74,15 @@ Connections AllConnections( const Positions &positions)
         for (auto j = i + 1; j != positions.end(); ++j)
         {
             const auto diff = *i - *j;
-            const auto distancePowered = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
-            result.insert( {
-                std::sqrt( static_cast<Length>(distancePowered)),
+            const auto distanceSquared = diff.x * diff.x + diff.y * diff.y + diff.z * diff.z;
+            result.push_back( {
+                static_cast<Length>(distanceSquared),
                 std::distance( positions.begin(), i),
                 std::distance( positions.begin(), j)});
         }
     }
+
+    std::ranges::make_heap(result, std::greater{});
     return result;
 }
 
@@ -98,6 +100,7 @@ void MergeInto( Circuit &left, const Circuit &right, const Connection &)
 
 int main()
 {
+    Timer t;
     std::ifstream input{"input8.txt"};
 
     auto positions = ReadCoordinates( input);
@@ -111,8 +114,11 @@ int main()
 
     constexpr auto connectionCount = 1000;
     std::uint64_t result = 0;
-    for ( const auto &connection : AllConnections( positions))
+    auto connections = AllConnections(positions);
+    auto lastConnection = connections.end();
+    while (true)
     {
+        auto &connection = connections.front();
         const auto firstCircuit = FindCircuit( circuits, connection.first);
         const auto secondCircuit = FindCircuit( circuits, connection.second);
 
@@ -127,6 +133,9 @@ int main()
             result = positions[connection.first].x * positions[connection.second].x;
             break;
         }
+
+        std::ranges::pop_heap( connections.begin(), connections.end(), std::greater{});
+        connections.pop_back();
     }
 
     std::cout << "product = " << result << '\n';
