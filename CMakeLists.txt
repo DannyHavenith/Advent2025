@@ -5,6 +5,12 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Aggressive optimizations for Release builds
+if(CMAKE_BUILD_TYPE STREQUAL "Release")
+    add_compile_options(-march=native -mtune=native -flto=auto -ffast-math -funroll-loops)
+    add_link_options(-flto=auto)
+endif()
+
 file(GLOB_RECURSE DAY_SOURCES "day*/day*.cpp")
 
 foreach(SOURCE_FILE ${DAY_SOURCES})
@@ -18,5 +24,3 @@ foreach(SOURCE_FILE ${DAY_SOURCES})
     set_target_properties(${EXECUTABLE_NAME} PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/${DAY_DIR}")
 endforeach()
-
-
