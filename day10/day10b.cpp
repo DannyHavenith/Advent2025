@@ -25,7 +25,12 @@ using Buttons = std::vector<Button>;
 using Tokenizer = std::sregex_token_iterator;
 using Count = std::int64_t;
 using Counters = std::vector< Count>;
-using ButtonSequenceCache = std::map< Button, std::optional<std::vector<std::pair<int,Counters>>>>;
+
+// A pair consisting of the button count of a button sequence and the effects
+// that that sequence of button has on counters.
+using ButtonsEffectOnCounters = std::pair< int, Counters>;
+using ButtonEffects = std::vector<ButtonsEffectOnCounters>;
+using ButtonSequenceCache = std::map< Button, std::optional<ButtonEffects>>;
 
 static constexpr Count noResult = 1'000'000;
 
@@ -120,7 +125,7 @@ std::pair<int, Counters> SequenceToCounters( const Buttons &sequence)
     Counters counters;
     for (auto button : sequence)
     {
-        auto bit = 0;
+        auto bit = 0U;
         while (button)
         {
             if (bit >= counters.size()) counters.resize( bit + 1);
@@ -134,29 +139,33 @@ std::pair<int, Counters> SequenceToCounters( const Buttons &sequence)
 }
 
 // let's do the brute force thing again.
-std::vector<std::pair< int, Counters>> FindButtonSequences( Bitset lights, Buttons::const_iterator begin, Buttons::const_iterator end, Buttons &buttonsSoFar)
+void FindButtonSequences(
+    Bitset lights,
+    Buttons::const_iterator begin, Buttons::const_iterator end,
+    Buttons &buttonsSoFar,
+    ButtonEffects &result)
 {
     if (begin == end)
     {
-        if (lights) return {};
-        else return {SequenceToCounters( buttonsSoFar)};
+        if (not lights) result.push_back( SequenceToCounters( buttonsSoFar));
+        return;
     }
 
-    auto solution1 = FindButtonSequences( lights, std::next( begin), end, buttonsSoFar);
+    FindButtonSequences( lights, std::next( begin), end, buttonsSoFar, result);
 
     buttonsSoFar.push_back( *begin);
-    const auto solution2 = FindButtonSequences( lights ^ *begin, std::next( begin), end, buttonsSoFar);
+    FindButtonSequences( lights ^ *begin, std::next( begin), end, buttonsSoFar, result);
     buttonsSoFar.pop_back();
-    solution1.insert(solution1.end(), solution2.begin(), solution2.end());
-
-    return solution1;
 }
 
 std::vector<std::pair< int, Counters>> FindButtonSequences( Bitset lights, Buttons::const_iterator begin, Buttons::const_iterator end)
 {
+    ButtonEffects effects;
     Buttons buttonWorkSet;
     buttonWorkSet.reserve( std::distance(begin, end));
-    return FindButtonSequences( lights, begin, end, buttonWorkSet);
+    FindButtonSequences( lights, begin, end, buttonWorkSet, effects);
+
+    return effects;
 }
 
 

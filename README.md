@@ -15,7 +15,7 @@ algorithm.
 
 All solutions are written in C++. The solutions for the first few days run well
 within 5ms (most within 1ms), but days 8, 9 and 10 currently require more time,
-up to 233ms for day 10b.
+up to 156ms for day 10b.
 
 Timings
 -------
@@ -45,7 +45,7 @@ data.
 | 9   | a    | 44.1ms   |
 | 9   | b    | 66.5ms   |
 | 10  | a    | 2.6ms    |
-| 10  | b    | 232.6ms  |
+| 10  | b    | 155.8ms  |
 | 11  | a    | 3.2ms    |
 | 11  | b    | 3.3ms    |
 | 12  | a    | 1.2ms    |
