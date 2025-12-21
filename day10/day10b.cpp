@@ -25,7 +25,7 @@ using Buttons = std::vector<Button>;
 using Tokenizer = std::sregex_token_iterator;
 using Count = std::int64_t;
 using Counters = std::vector< Count>;
-using ButtonSequenceCache = std::map< Button, std::optional<std::vector<Buttons>>>;
+using ButtonSequenceCache = std::map< Button, std::optional<std::vector<std::pair<int,Counters>>>>;
 
 static constexpr Count noResult = 1'000'000;
 
@@ -109,28 +109,58 @@ bool AllZero( const Counters &counters)
 }
 
 
+/**
+ * Convert a sequence of buttons to the effect this sequence has on the counters.
+ * Return a pair that holds:
+ *     * the size of the original sequence
+ *     * the effect on the counters
+ */
+std::pair<int, Counters> SequenceToCounters( const Buttons &sequence)
+{
+    Counters counters;
+    for (auto button : sequence)
+    {
+        auto bit = 0;
+        while (button)
+        {
+            if (bit >= counters.size()) counters.resize( bit + 1);
+            if (button % 2) ++counters[bit];
+            button >>= 1;
+            ++bit;
+        }
+    }
+
+    return {sequence.size(), counters};
+}
+
 // let's do the brute force thing again.
-std::vector<Buttons> FindButtonSequences( Bitset lights, Buttons::const_iterator begin, Buttons::const_iterator end, Buttons buttonsSoFar = {})
+std::vector<std::pair< int, Counters>> FindButtonSequences( Bitset lights, Buttons::const_iterator begin, Buttons::const_iterator end, Buttons &buttonsSoFar)
 {
     if (begin == end)
     {
         if (lights) return {};
-        else return {buttonsSoFar};
+        else return {SequenceToCounters( buttonsSoFar)};
     }
 
     auto solution1 = FindButtonSequences( lights, std::next( begin), end, buttonsSoFar);
 
     buttonsSoFar.push_back( *begin);
     const auto solution2 = FindButtonSequences( lights ^ *begin, std::next( begin), end, buttonsSoFar);
+    buttonsSoFar.pop_back();
     solution1.insert(solution1.end(), solution2.begin(), solution2.end());
 
     return solution1;
 }
 
+std::vector<std::pair< int, Counters>> FindButtonSequences( Bitset lights, Buttons::const_iterator begin, Buttons::const_iterator end)
+{
+    Buttons buttonWorkSet;
+    buttonWorkSet.reserve( std::distance(begin, end));
+    return FindButtonSequences( lights, begin, end, buttonWorkSet);
+}
+
 
 // Create a bitmask that represents all counters that have an odd value
-// At the same time, decrease those counters' values by 1 so that all
-// values are even.
 Bitset CountersToLights( const Counters &counters)
 {
     Bitset bitset{};
@@ -143,27 +173,18 @@ Bitset CountersToLights( const Counters &counters)
     return bitset;
 }
 
-
 /**
  * Apply a button sequence to counters and then divide each counter by 2.
  */
-Counters ReduceCounters( Counters counters, const Buttons &sequence)
+Counters ReduceCounters( Counters counters, const Counters &reduction)
 {
     // first apply the button sequence to the counters, this should
     // leave each counter an even value.
-    for (const auto &button : sequence)
-    {
-        for (auto index = 0; index < counters.size(); ++index)
-        {
-            if (button & (1 << index))
-            {
-                --counters[index];
-            }
-        }
-    }
-
+    auto counterReduction = reduction.begin();
     for (auto &counter: counters)
     {
+        if (counterReduction != reduction.end()) counter -= *counterReduction++;
+        if (counter % 2) throw std::runtime_error( "couldn't reduce odd counters to even by applying a button sequence");
         if (counter > 0) counter /= 2;
     }
 
@@ -182,7 +203,7 @@ Count Solve(
     auto &buttonSequences = cache[lights];
     if (not buttonSequences)
     {
-        buttonSequences = FindButtonSequences( CountersToLights( counters), buttons.begin(), buttons.end());
+        buttonSequences = FindButtonSequences( lights, buttons.begin(), buttons.end());
     }
 
     if (buttonSequences->empty()) return noResult;
@@ -190,15 +211,14 @@ Count Solve(
     Count minimumCount = noResult;
     for ( const auto &sequence : *buttonSequences)
     {
-        const auto reducedCounters = ReduceCounters( counters, sequence);
+        const auto reducedCounters = ReduceCounters( counters, sequence.second);
         if (AnyLessThanZero( reducedCounters)) continue;
 
-        auto count = 2 * Solve( reducedCounters, buttons, cache) + sequence.size();
+        auto count = 2 * Solve( reducedCounters, buttons, cache) + sequence.first;
         if (count < minimumCount) minimumCount = count;
     }
 
     return minimumCount;
-
 }
 
 int main()
