@@ -9,73 +9,74 @@
 
 #include "../timer.h"
 
-using Cell = uint8_t;
-using Row = std::vector<Cell>;
-using Grid = std::vector<Row>;
+namespace {
+    using Cell = uint8_t;
+    using Row = std::vector<Cell>;
+    using Grid = std::vector<Row>;
 
 
-Row ToRow( std::string_view line)
-{
-    Row result(line.size());
-    std::transform(
-        line.begin(), line.end(),
-        result.begin(),
-        [](char cell) -> Cell { return cell == '@';}
-    );
-    return result;
-}
-
-Grid ReadGrid( std::istream &textInput)
-{
-    Grid result;
-    std::string line;
-    while (getline(textInput, line))
+    Row ToRow( std::string_view line)
     {
-        result.push_back( ToRow( line));
-    }
-    return result;
-}
-
-Row &AddTo( Row &target, const Row &source)
-{
-    if (target.empty())
-    {
-        target = source;
-    }
-    else
-    {
+        Row result(line.size());
         std::transform(
-            target.begin(), target.end(),
-            source.begin(),
-            target.begin(),
+            line.begin(), line.end(),
+            result.begin(),
+            [](char cell) -> Cell { return cell == '@';}
+        );
+        return result;
+    }
+
+    Grid ReadGrid( std::istream &textInput)
+    {
+        Grid result;
+        std::string line;
+        while (getline(textInput, line))
+        {
+            result.push_back( ToRow( line));
+        }
+        return result;
+    }
+
+    Row &AddTo( Row &target, const Row &source)
+    {
+        if (target.empty())
+        {
+            target = source;
+        }
+        else
+        {
+            std::transform(
+                target.begin(), target.end(),
+                source.begin(),
+                target.begin(),
+                std::plus{}
+            );
+        }
+        return target;
+    }
+
+    Row operator+( Row left, const Row &right)
+    {
+        AddTo( left, right);
+        return left;
+    }
+
+    /// Calculate the number of direct left and right neighbours of each cell.
+    Row CalculateLR( const Row &row)
+    {
+        Row result( row.begin() + 1, row.end());
+        result.push_back(0);
+
+        std::transform(
+            row.begin(), row.end() - 1,
+            result.begin() + 1,
+            result.begin() + 1,
             std::plus{}
         );
+
+        return result;
     }
-    return target;
 }
-
-Row operator+( Row left, const Row &right)
-{
-    AddTo( left, right);
-    return left;
-}
-
-/// Calculate the number of direct left and right neighbours of each cell.
-Row CalculateLR( const Row &row)
-{
-    Row result( row.begin() + 1, row.end());
-    result.push_back(0);
-
-    std::transform(
-        row.begin(), row.end() - 1,
-        result.begin() + 1,
-        result.begin() + 1,
-        std::plus{}
-    );
-
-    return result;
-}
-
 int main()
 {
     Timer t;
@@ -118,7 +119,7 @@ int main()
             AddTo( currentCount, nextLRC);
             if (currentRow)
             {
-                for (auto i = 0; i < currentCount.size();++i)
+                for (auto i = 0U; i < currentCount.size();++i)
                 {
                     if ((*currentRow)[i] and currentCount[i] < 4)
                     {
@@ -134,7 +135,7 @@ int main()
             currentRow = &nextRow;
         }
 
-        for (auto i = 0; i < currentCount.size();++i)
+        for (auto i = 0U; i < currentCount.size();++i)
         {
             if ((*currentRow)[i] and currentCount[i] < 4)
             {

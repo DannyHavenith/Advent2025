@@ -8,9 +8,12 @@
 
 #include "../timer.h"
 
-using Number = std::int64_t;
-using Accumulator = std::optional<Number>;
-using Accumulators = std::vector<Accumulator>;
+namespace {
+
+    using Number = std::int64_t;
+    using Accumulator = std::optional<Number>;
+    using Accumulators = std::vector<Accumulator>;
+}
 
 int main()
 {
@@ -48,10 +51,10 @@ int main()
     Number sum = 0;
 
 
-    static const std::regex op{R"(([\+\*]))"};
+    static const std::regex opExpression{R"(([\+\*]))"};
     auto currentAccumulator = accumulators.begin();
     using Tok = std::sregex_token_iterator;
-    for ( auto currentOp = Tok{line.begin(), line.end(), op, 1}; currentOp != Tok{}; ++currentOp, ++currentAccumulator)
+    for ( auto currentOp = Tok{line.begin(), line.end(), opExpression, 1}; currentOp != Tok{}; ++currentOp, ++currentAccumulator)
     {
         while (not currentAccumulator->has_value()) ++currentAccumulator;
         assert( currentAccumulator != accumulators.end());

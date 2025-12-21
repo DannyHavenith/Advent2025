@@ -9,40 +9,42 @@
 
 #include "../timer.h"
 
-using Number = std::uint64_t;
-using Range = std::pair<Number, Number>;
-using Ranges = std::vector<Range>;
+namespace {
+    using Number = std::uint64_t;
+    using Range = std::pair<Number, Number>;
+    using Ranges = std::vector<Range>;
 
-Ranges UnOverlap( Ranges ranges)
-{
-    for (auto currentIt = ranges.begin(); currentIt != ranges.end();++currentIt)
+    Ranges UnOverlap( Ranges ranges)
     {
-        auto &current = *currentIt;
-        auto mergeCandidate = std::next( currentIt);
-
-        // ranges are already sorted on .first, so we know that
-        // mergeCandidate->first >= current.first
-        while (mergeCandidate != ranges.end() and mergeCandidate->first <= current.second)
+        for (auto currentIt = ranges.begin(); currentIt != ranges.end();++currentIt)
         {
-            if (mergeCandidate->second > current.second)
+            auto &current = *currentIt;
+            auto mergeCandidate = std::next( currentIt);
+
+            // ranges are already sorted on .first, so we know that
+            // mergeCandidate->first >= current.first
+            while (mergeCandidate != ranges.end() and mergeCandidate->first <= current.second)
             {
-                current.second = mergeCandidate->second;
+                if (mergeCandidate->second > current.second)
+                {
+                    current.second = mergeCandidate->second;
+                }
+                mergeCandidate = ranges.erase( mergeCandidate);
             }
-            mergeCandidate = ranges.erase( mergeCandidate);
         }
+        return ranges;
     }
-    return ranges;
-}
 
-Number SumRanges( const Ranges &ranges)
-{
-    return std::accumulate(
-        ranges.begin(), ranges.end(),
-        Number{},
-        []( Number value, const auto &range)
-        {
-            return value + range.second - range.first + 1;
-        });
+    Number SumRanges( const Ranges &ranges)
+    {
+        return std::accumulate(
+            ranges.begin(), ranges.end(),
+            Number{},
+            []( Number value, const auto &range)
+            {
+                return value + range.second - range.first + 1;
+            });
+    }
 }
 
 int main()

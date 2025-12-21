@@ -87,7 +87,6 @@ EventType Compare( const Stretch &s1, const Stretch &s2)
         auto startPointRelation = s1.xStart <=> s2.xStart;
         auto endPointRelation = s1.xEnd <=> s2.xEnd;
         using namespace std;
-        using SO = std::strong_ordering;
         static constexpr std::array<std::array<EventType,3>, 3> table{{
         //        \  endpoint:
         // start   \ less          equal          greater

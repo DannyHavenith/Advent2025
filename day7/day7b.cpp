@@ -11,21 +11,23 @@
 
 #include "../timer.h"
 
-using BeamCount = std::size_t;
-using Positions = std::set<int>;
+namespace {
+    using BeamCount = std::size_t;
+    using Positions = std::set<int>;
 
-// This maps from (horizontal) beam position
-// to the number of beams traveling in that position.
-using Beams = std::map<int, BeamCount>;
+    // This maps from (horizontal) beam position
+    // to the number of beams traveling in that position.
+    using Beams = std::map<int, BeamCount>;
 
-Positions FindAll( char needle, std::string_view haystack)
-{
-    Positions result;
-    for (auto i = haystack.begin(); i != haystack.end(); ++i)
+    Positions FindAll( char needle, std::string_view haystack)
     {
-        if (*i == needle) result.insert( std::distance( haystack.begin(), i));
+        Positions result;
+        for (auto i = haystack.begin(); i != haystack.end(); ++i)
+        {
+            if (*i == needle) result.insert( std::distance( haystack.begin(), i));
+        }
+        return result;
     }
-    return result;
 }
 
 int main()

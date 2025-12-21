@@ -7,19 +7,21 @@
 
 #include "../timer.h"
 
-using Number = std::int64_t;
+namespace {
+    using Number = std::int64_t;
 
-struct Accumulator {
-    Accumulator( Number initialProduct, Number initialSum)
-    :product{initialProduct}, sum{initialSum}
-    {}
+    struct Accumulator {
+        Accumulator( Number initialProduct, Number initialSum)
+        :product{initialProduct}, sum{initialSum}
+        {}
 
-    Number product;
-    Number sum;
-};
+        Number product;
+        Number sum;
+    };
 
-using Accumulators = std::vector<Accumulator>;
-using Tokenizer = std::sregex_token_iterator;
+    using Accumulators = std::vector<Accumulator>;
+    using Tokenizer = std::sregex_token_iterator;
+}
 
 int main()
 {

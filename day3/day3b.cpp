@@ -7,25 +7,26 @@
 
 #include "../timer.h"
 
-using Number = std::uint64_t;
+namespace {
+    using Number = std::uint64_t;
 
-template<int digitCount = 12>
-Number MaxJoltage( std::string_view bank)
-{
-    assert (bank.size() >= digitCount);
-
-    auto lastposition = bank.begin();
-    Number result = 0;
-    for (auto n = 0; n < digitCount; ++n)
+    template<int digitCount = 12>
+    Number MaxJoltage( std::string_view bank)
     {
-        lastposition = std::max_element( lastposition, bank.end() - digitCount + n + 1);
-        result = 10 * result + (*lastposition - '0');
-        ++lastposition;
+        assert (bank.size() >= digitCount);
+
+        auto lastposition = bank.begin();
+        Number result = 0;
+        for (auto n = 0; n < digitCount; ++n)
+        {
+            lastposition = std::max_element( lastposition, bank.end() - digitCount + n + 1);
+            result = 10 * result + (*lastposition - '0');
+            ++lastposition;
+        }
+
+        return result;
     }
-
-    return result;
 }
-
 
 int main()
 {

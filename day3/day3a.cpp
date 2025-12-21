@@ -6,16 +6,17 @@
 
 #include "../timer.h"
 
-int MaxJoltage( std::string_view bank)
-{
-    assert( bank.size() >= 2);
+namespace {
+    int MaxJoltage( std::string_view bank)
+    {
+        assert( bank.size() >= 2);
 
-    const auto firstDigit = std::max_element( bank.begin(), bank.end() - 1);
-    const auto secondDigit = std::max_element( firstDigit + 1, bank.end());
+        const auto firstDigit = std::max_element( bank.begin(), bank.end() - 1);
+        const auto secondDigit = std::max_element( firstDigit + 1, bank.end());
 
-    return 10 * (*firstDigit - '0') + (*secondDigit - '0');
+        return 10 * (*firstDigit - '0') + (*secondDigit - '0');
+    }
 }
-
 
 int main()
 {

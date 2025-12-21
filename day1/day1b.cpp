@@ -5,10 +5,12 @@
 
 #include "../timer.h"
 
-int absmod( int n, int m)
-{
-    // yes, I'm deliberately obfuscating this...
-    return n < 0 ? m + n % m: n % m;
+namespace {
+    int absmod( int n, int m)
+    {
+        // yes, I'm deliberately obfuscating this...
+        return n < 0 ? m + n % m : n % m;
+    }
 }
 
 int main()

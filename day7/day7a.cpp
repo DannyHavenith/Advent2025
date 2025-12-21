@@ -8,17 +8,19 @@
 
 #include "../timer.h"
 
-// All (horizontal) positions where a beam is traveling.
-using Positions = std::set<int>;
+namespace {
+    // All (horizontal) positions where a beam is traveling.
+    using Positions = std::set<int>;
 
-Positions FindAll( char needle, std::string_view haystack)
-{
-    Positions result;
-    for (auto i = haystack.begin(); i != haystack.end(); ++i)
+    Positions FindAll( char needle, std::string_view haystack)
     {
-        if (*i == needle) result.insert( std::distance( haystack.begin(), i));
+        Positions result;
+        for (auto i = haystack.begin(); i != haystack.end(); ++i)
+        {
+            if (*i == needle) result.insert( std::distance( haystack.begin(), i));
+        }
+        return result;
     }
-    return result;
 }
 
 int main()
