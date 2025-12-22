@@ -5,6 +5,22 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Compiler warnings
+add_compile_options(
+    -Wall
+    -Wshadow
+    -Wcast-align
+    -Wpointer-arith
+    -Wwrite-strings
+    -Wunused
+    -Wunused-function
+    -Wunused-variable
+    -Wunused-parameter
+    -Wunused-but-set-variable
+    -Wunused-but-set-parameter
+)
+
+
 # Aggressive optimizations for Release builds
 if(CMAKE_BUILD_TYPE STREQUAL "Release")
     add_compile_options(-march=native -mtune=native -flto=auto -ffast-math -funroll-loops)

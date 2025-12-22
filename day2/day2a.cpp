@@ -95,7 +95,7 @@ int main()
     {
         static const std::regex rangeRegex{"(\\d+)-(\\d+)\\n?"};
         std::smatch m;
-        auto parsed = regex_match( line, m, rangeRegex);
+        [[maybe_unused]] auto parsed = regex_match( line, m, rangeRegex);
         assert( parsed);
 
         const auto firstString = m[1];

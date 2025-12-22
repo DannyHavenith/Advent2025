@@ -85,14 +85,14 @@ namespace {
 
     /**
      * Calculate the sum of of numbers that
-     *   * have 'size' digits
+     *   * have 'digits' digits
      *   * have segmentCount repeats of the same sequence of digits
      *   * are between first and last (inclusive)
      *
      * ...and do that calculation in O(1) time. In other words, the complexity does
      * not depend on the size of the input range.
      *
-     * It makes use of this formula:
+     * It makes use of this equality:
      *   a + (a+1) + (a+2) + ... + b  (e.g. 19 + 20 + 21 + 22 + ...)
      *    = ((b - a + 1) * (a + b)) / 2
      *
@@ -102,9 +102,9 @@ namespace {
      * where in this example x = 101,
      *
      */
-    Number SumOfMatchesSegmented( int size, int segmentCount, Number first, Number last)
+    Number SumOfMatchesSegmented( int digits, int segmentCount, Number first, Number last)
     {
-            const auto segmentSize = size / segmentCount;
+            const auto segmentSize = digits / segmentCount;
 
             const auto lowestCounter = CalculateLower( first, segmentSize, segmentCount);
             const auto highestCounter = CalculateUpper( last, segmentSize, segmentCount);
@@ -112,24 +112,22 @@ namespace {
             return  rangeSum * Expander( segmentSize, segmentCount);
     }
 
-    /**
-     * Calculate the sum of matches with 'size' digits that are in the range [first, last]
-     *
-     */
-    Number SumOfMatches(
-        int size,
-        Number first,
-        Number last)
+     Number SumOfMatches(
+        const int digits,
+        const Number first,
+        const Number last)
     {
         Number sum = 0;
         std::set<int> previousSegmentCounts;
 
+        if (digits == 1) return 0;
+
         // SegmentCount is how many repeated sequences there are in a number,
         // i.e. segmentCount 2 corresponds to a number like 123123, while
         // segmentCount 3 corresponds to a number like 121212
-        for (auto segmentCount = 2; segmentCount <= size; ++segmentCount)
+        for (auto segmentCount = 2; segmentCount <= digits/2; ++segmentCount)
         {
-            if (size % segmentCount) continue;
+            if (digits % segmentCount) continue;
 
             // We have a problem that the same number may contribute to the sum of
             // different segment counts.
@@ -145,10 +143,15 @@ namespace {
             //
             auto thisSegmentWeight = 1 - CountFactorsOf( segmentCount, previousSegmentCounts);
             if (thisSegmentWeight == 0) continue;
+            if (thisSegmentWeight > 0) previousSegmentCounts.insert( segmentCount);
 
-            previousSegmentCounts.insert( segmentCount);
+            sum += thisSegmentWeight * SumOfMatchesSegmented( digits, segmentCount, first, last);
+        }
 
-            sum += thisSegmentWeight * SumOfMatchesSegmented( size, segmentCount, first, last);
+        auto thisSegmentWeight = 1 - CountFactorsOf( digits, previousSegmentCounts);
+        if (thisSegmentWeight)
+        {
+            sum += thisSegmentWeight * SumOfMatchesSegmented( digits, digits, first, last);
         }
 
         return sum;
@@ -166,7 +169,7 @@ int main()
     {
         static const std::regex rangeRegex{"(\\d+)-(\\d+)\n?"};
         std::smatch m;
-        auto parsed = regex_match( line, m, rangeRegex);
+        [[maybe_unused]] auto parsed = regex_match( line, m, rangeRegex);
         assert( parsed);
 
         const auto firstString = m[1];
@@ -174,9 +177,9 @@ int main()
         const auto firstSize = firstString.length();
         const auto secondSize = secondString.length();
 
-        for ( auto size = firstSize; size <= secondSize; ++size)
+        for ( auto digits = firstSize; digits <= secondSize; ++digits)
         {
-            sum += SumOfMatches( size, stol( firstString), stol( secondString));
+            sum += SumOfMatches( digits, stol( firstString), stol( secondString));
         }
     }
 
